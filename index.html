@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain to IP Lookup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+    }
+    input {
+      padding: 5px;
+      width: 300px;
+    }
+    button {
+      padding: 5px 10px;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Domain to IP Lookup</h1>
+  <p>Enter a domain name below to find its associated IP address:</p>
+  <input type="text" id="domain" placeholder="e.g., example.com">
+  <button onclick="fetchDomainIP()">Get IP</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function fetchDomainIP() {
+      const domainInput = document.getElementById('domain');
+      const resultDiv = document.getElementById('result');
+      const domain = domainInput.value.trim();
+
+      if (!domain) {
+        resultDiv.innerHTML = '<p style="color: red;">Please enter a domain.</p>';
+        return;
+      }
+
+      const apiUrl = `https://dns.google/resolve?name=${domain}&type=A`;
+
+      try {
+        resultDiv.innerHTML = '<p>Fetching IP addresses...</p>';
+        
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.Answer && data.Answer.length > 0) {
+          const ips = data.Answer.map(record => record.data);
+          resultDiv.innerHTML = `
+            <p>IP addresses for <strong>${domain}</strong>:</p>
+            <ul>
+              ${ips.map(ip => `<li>${ip}</li>`).join('')}
+            </ul>
+          `;
+        } else {
+          resultDiv.innerHTML = `<p>No IP addresses found for <strong>${domain}</strong>.</p>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
